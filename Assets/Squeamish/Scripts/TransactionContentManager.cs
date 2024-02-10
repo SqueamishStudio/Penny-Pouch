@@ -26,4 +26,9 @@ public class TransactionContentManager : MonoBehaviour
     {
         noteText.text = note;
     }
+
+    public void SetDateText(DateTimeOffset date)
+    {
+        dateText.text = date.ToString();
+    }
 }

@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using Newtonsoft.Json;
+using System.IO;
 
 public class Transaction
 {
@@ -33,24 +34,28 @@ public class MoneyManager : MonoBehaviour
 
     private float Balance;
 
-    [SerializeField] private FileDataHandler fileDataHandler;
+    private FileDataHandler fileDataHandler;
 
     private void Start()
     {
         Debug.Log("Money: " + Balance);
         SetText();
-
-        fileDataHandler = FindAnyObjectByType<FileDataHandler>();
+        var path = Application.persistentDataPath;
+        fileDataHandler = new FileDataHandler(path);
         
         var x = fileDataHandler.Load("[]");
         Debug.Log("Loaded: " + x);
         TransactionHistory = TransactionsFromJson(x);
 
         // Load the transaction history
-        for (int i = TransactionHistory.Count - 1; i >= 0; i--)
+        for (int i = 0; i < TransactionHistory.Count; i++)
         {
             Transaction transaction = TransactionHistory[i];
-            CreateTransactionUI(transaction);
+            Debug.Log(transaction.date);
+            if (transaction != null)
+            {
+                CreateTransactionUI(transaction);
+            }
         }
     }
 
@@ -69,6 +74,12 @@ public class MoneyManager : MonoBehaviour
             ClearUi();
 
             CreateTransactionUI(transaction);
+            // Add the transaction to the transaction history
+            TransactionHistory.Add(transaction);
+            Debug.Log("TransactionHistory count: " + TransactionHistory.Count);
+            // Save the transaction history to the file
+            Debug.Log("Saving transaction history to file " + TransactionsToJson());
+            fileDataHandler.Save(TransactionsToJson());
         } else
         {
             // TODO: Show user an error message
@@ -90,6 +101,12 @@ public class MoneyManager : MonoBehaviour
             ClearUi();
 
             CreateTransactionUI(transaction);
+            // Add the transaction to the transaction history
+            TransactionHistory.Add(transaction);
+            Debug.Log("TransactionHistory count: " + TransactionHistory.Count);
+            // Save the transaction history to the file
+            Debug.Log("Saving transaction history to file " + TransactionsToJson());
+            fileDataHandler.Save(TransactionsToJson());
         }
         else
         {
@@ -135,17 +152,10 @@ public class MoneyManager : MonoBehaviour
         TransUI.transform.SetAsFirstSibling();
 
         TransUI.GetComponent<TransactionContentManager>().SetAmountText(Mathf.Abs(transaction.amount).ToString(), (transaction.amount < 0) ? "-" : "+", Balance);
-        TransUI.GetComponent<TransactionContentManager>().SetNoteText(NoteText.text);
+        TransUI.GetComponent<TransactionContentManager>().SetNoteText(transaction.note);
+        TransUI.GetComponent<TransactionContentManager>().SetDateText(transaction.date);
 
         TransUI.transform.localScale = new Vector3(1, 1, 1);
-
-        // Add the transaction to the transaction history
-        TransactionHistory.Add(transaction);
-        Debug.Log("TransactionHistory count: " + TransactionHistory.Count);
-
-        // Save the transaction history to the file
-        Debug.Log("Saving transaction history to file " + TransactionsToJson());
-        fileDataHandler.Save(TransactionsToJson());
     }
 
     private string TransactionsToJson()

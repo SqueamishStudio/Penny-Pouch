@@ -4,16 +4,16 @@ using UnityEngine;
 using System;
 using System.IO;
 
-public class FileDataHandler : MonoBehaviour
+public class FileDataHandler
 {
     private string path;
     private string name;
 
     public string LoadedString;
 
-    public void Start()
+    public FileDataHandler(string path)
     {
-        path = Application.persistentDataPath;
+        this.path = path;
         name = "data.json";
     }
 
