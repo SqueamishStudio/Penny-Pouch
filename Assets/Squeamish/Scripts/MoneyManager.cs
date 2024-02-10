@@ -74,12 +74,7 @@ public class MoneyManager : MonoBehaviour
             ClearUi();
 
             CreateTransactionUI(transaction);
-            // Add the transaction to the transaction history
-            TransactionHistory.Add(transaction);
-            Debug.Log("TransactionHistory count: " + TransactionHistory.Count);
-            // Save the transaction history to the file
-            Debug.Log("Saving transaction history to file " + TransactionsToJson());
-            fileDataHandler.Save(TransactionsToJson());
+            SaveTransaction(transaction);
         } else
         {
             // TODO: Show user an error message
@@ -101,12 +96,7 @@ public class MoneyManager : MonoBehaviour
             ClearUi();
 
             CreateTransactionUI(transaction);
-            // Add the transaction to the transaction history
-            TransactionHistory.Add(transaction);
-            Debug.Log("TransactionHistory count: " + TransactionHistory.Count);
-            // Save the transaction history to the file
-            Debug.Log("Saving transaction history to file " + TransactionsToJson());
-            fileDataHandler.Save(TransactionsToJson());
+            SaveTransaction(transaction);
         }
         else
         {
@@ -156,6 +146,12 @@ public class MoneyManager : MonoBehaviour
         TransUI.GetComponent<TransactionContentManager>().SetDateText(transaction.date);
 
         TransUI.transform.localScale = new Vector3(1, 1, 1);
+    }
+
+    private void SaveTransaction(Transaction transaction)
+    {
+        TransactionHistory.Add(transaction);
+        fileDataHandler.Save(TransactionsToJson());
     }
 
     private string TransactionsToJson()
