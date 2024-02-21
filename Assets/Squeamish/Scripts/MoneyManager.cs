@@ -38,8 +38,6 @@ public class MoneyManager : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("Money: " + Balance);
-        SetText();
         var path = Application.persistentDataPath;
         fileDataHandler = new FileDataHandler(path);
         
@@ -57,6 +55,16 @@ public class MoneyManager : MonoBehaviour
                 CreateTransactionUI(transaction);
             }
         }
+
+        if (TransactionHistory.Count > 0) // If there are transactions, set the balance to the last transaction's balance
+        {
+            Balance = TransactionHistory[TransactionHistory.Count - 1].balance;
+        } else // If there are no transactions, set the balance to 0
+        {
+            Balance = 0f;
+        }
+
+        SetText();
     }
 
     public void Save()
@@ -126,7 +134,7 @@ public class MoneyManager : MonoBehaviour
 
     private void SetText()
     {
-        MainMoney.text = "$" + Balance;
+        MainMoney.text = "$" + Balance.ToString("F2");
     }
 
     private void ClearUi()
@@ -141,7 +149,10 @@ public class MoneyManager : MonoBehaviour
 
         TransUI.transform.SetAsFirstSibling();
 
-        TransUI.GetComponent<TransactionContentManager>().SetAmountText(Mathf.Abs(transaction.amount).ToString(), (transaction.amount < 0) ? "-" : "+", Balance);
+        TransUI.GetComponent<TransactionContentManager>().SetAmountText
+            (Mathf.Abs(transaction.amount).ToString("F2"), 
+                       (transaction.amount < 0) ? "-" : "+", transaction.balance);
+
         TransUI.GetComponent<TransactionContentManager>().SetNoteText(transaction.note);
         TransUI.GetComponent<TransactionContentManager>().SetDateText(transaction.date);
 
