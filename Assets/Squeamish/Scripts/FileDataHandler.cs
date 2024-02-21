@@ -48,4 +48,10 @@ public class FileDataHandler
             return Default;
         }
     }
+
+    public void Delete()
+    {
+        File.Delete(Path.Combine(path, name));
+        Application.Quit();
+    }
 }

@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
+using Unity.VisualScripting;
 
 public class Transaction
 {
@@ -26,7 +27,12 @@ public class MoneyManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI AmountMoney;
     [SerializeField] TextMeshProUGUI NoteText;
 
-    [SerializeField] GameObject TransactionUIPrefab;
+    [SerializeField] GameObject error_object;
+    [SerializeField] GameObject maxMoney_obj;
+
+    [SerializeField] GameObject TransactionUIPrefab_NOTE;
+    [SerializeField] GameObject TransactionUIPrefab_NOTELESS;
+
     private GameObject TransUI;
     [SerializeField] GameObject TransactionContentFilter;
 
@@ -71,7 +77,7 @@ public class MoneyManager : MonoBehaviour
     {
         Transaction transaction = new Transaction();
         float Amount = GetAmount();
-        if (Amount > 0)
+        if (Amount > 0 & !MaximumRangeMoney(transaction.amount))
         {
             Balance += Amount;
             transaction.balance = Balance;
@@ -85,7 +91,7 @@ public class MoneyManager : MonoBehaviour
             SaveTransaction(transaction);
         } else
         {
-            // TODO: Show user an error message
+            ShowError();
         }
     }
 
@@ -93,11 +99,11 @@ public class MoneyManager : MonoBehaviour
     {
         Transaction transaction = new Transaction();
         float Amount = GetAmount();
-        if (Amount > 0)
+        if (Amount > 0 & !MaximumRangeMoney(-transaction.amount))
         {
             Balance -= Amount;
             transaction.balance = Balance;
-            transaction.amount = Amount;
+            transaction.amount = -Amount;
             transaction.note = NoteText.text;
 
             SetText();
@@ -108,8 +114,13 @@ public class MoneyManager : MonoBehaviour
         }
         else
         {
-            // TODO: Show user an error message
+            ShowError();
         }
+    }
+
+    private void ShowError()
+    {
+        error_object.SetActive(true);
     }
 
     private float GetAmount()
@@ -144,7 +155,20 @@ public class MoneyManager : MonoBehaviour
 
     private void CreateTransactionUI(Transaction transaction)
     {
-        TransUI = Instantiate(TransactionUIPrefab);
+        if (transaction.note.Length > 1)
+        {
+            TransUI = Instantiate(TransactionUIPrefab_NOTE);
+
+            TransUI.GetComponent<TransactionContentManager>().SetNoteText(transaction.note);
+        }
+        else
+        {
+            TransUI = Instantiate(TransactionUIPrefab_NOTELESS);
+        }
+
+        
+
+
         TransUI.transform.SetParent(TransactionContentFilter.transform);
 
         TransUI.transform.SetAsFirstSibling();
@@ -152,8 +176,7 @@ public class MoneyManager : MonoBehaviour
         TransUI.GetComponent<TransactionContentManager>().SetAmountText
             (Mathf.Abs(transaction.amount).ToString("F2"), 
                        (transaction.amount < 0) ? "-" : "+", transaction.balance);
-
-        TransUI.GetComponent<TransactionContentManager>().SetNoteText(transaction.note);
+        
         TransUI.GetComponent<TransactionContentManager>().SetDateText(transaction.date);
 
         TransUI.transform.localScale = new Vector3(1, 1, 1);
@@ -173,5 +196,31 @@ public class MoneyManager : MonoBehaviour
     private List<Transaction> TransactionsFromJson(string json)
     {
         return JsonConvert.DeserializeObject<List<Transaction>>(json);
+    }
+
+    private bool MaximumRangeMoney(float amount)
+    {
+        if (Balance + amount < -100000)
+        {
+            maxMoney_obj.SetActive(true);
+            return true;
+        }
+        else if (Balance + amount > 100000)
+        {
+            maxMoney_obj.SetActive(true);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void DELETEDATA()
+    {
+        fileDataHandler.Delete();
+    }
+
+    public void QUITAPPLICATION()
+    {
+        Application.Quit();
     }
 }
